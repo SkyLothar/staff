@@ -21,14 +21,17 @@ manager.add_command("db", flask.ext.migrate.MigrateCommand)
 
 @manager.command
 def superuser():
-    wx_user_id = prompt("wx_user_id")
+    from staff.utils import get_uid
+    email = prompt("email")
     password = prompt_pass("password")
 
     datastore = app.extensions["security"].datastore
-    user = datastore.find_user(wx_user_id=wx_user_id)
+    user = datastore.find_user(email=email)
     if user is None:
-        user = datastore.create_user(wx_user_id=wx_user_id, password=password)
+        user = datastore.create_user(email=email, wx_user_id=get_uid())
         datastore.put(user)
+
+    user.password = password
     role = datastore.find_or_create_role("admin")
     datastore.add_role_to_user(user, role)
     datastore.commit()
