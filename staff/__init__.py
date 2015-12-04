@@ -39,7 +39,6 @@ def create_app(config):
     gitlab.init_admin()
 
     @app.route("/")
-    @login_required
     def index():
         return render_template("index.html")
 
