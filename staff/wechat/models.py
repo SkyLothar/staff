@@ -20,9 +20,9 @@ class WechatApp(BasicMixin, QYHMixin, db.Model):
     )
     agentid = db.Column(db.Integer, nullable=False)
 
-    secret = db.Column(db.Unicode, nullable=False)
-    token = db.Column(db.Unicode, nullable=False)
-    aeskey = db.Column(db.Unicode, nullable=False)
+    secret = db.Column(db.Unicode(128), nullable=False)
+    token = db.Column(db.Unicode(128), nullable=False)
+    aeskey = db.Column(db.Unicode(128), nullable=False)
 
     def __str__(self):
         return str(self.name)
