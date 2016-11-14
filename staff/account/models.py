@@ -1,6 +1,7 @@
 from flask.ext.security import UserMixin, RoleMixin
 
 from ..ext import db
+from ..ldap import ldap
 from ..mixin import BasicMixin
 
 
@@ -14,8 +15,7 @@ roles_users = db.Table(
 class Role(db.Model, BasicMixin, RoleMixin):
     __tablename__ = "role"
 
-    name = db.Column(db.Unicode(255), unique=True, nullable=False)
-    description = db.Column(db.Unicode(255))
+    name = db.Column(db.Unicode(63), unique=True, nullable=False)
 
     def __str__(self):
         return str(self.name)
@@ -24,24 +24,7 @@ class Role(db.Model, BasicMixin, RoleMixin):
 class User(db.Model, BasicMixin, UserMixin):
     __tablename__ = "user"
 
-    wx_user_id = db.Column(
-        db.Unicode(255), nullable=False, unique=True, index=True
-    )
-    password = db.Column(db.Unicode(255))
-
-    name = db.Column(db.Unicode(255))
-    avatar = db.Column(db.Unicode(1024))
-    email = db.Column(db.Unicode(255))
-    comment = db.Column(db.UnicodeText)
-
-    gitlab_account_id = db.Column(
-        db.Integer,
-        db.ForeignKey("gitlab_account.id")
-    )
-    gitlab_account = db.relationship(
-        "GitlabAccount",
-        uselist=False, backref="user"
-    )
+    username = db.Column(db.Unicode(63), unique=True, index=True)
 
     active = db.Column(db.Boolean, default=False)
     # confirmable SECURITY_CONFIRMABLE
@@ -59,12 +42,7 @@ class User(db.Model, BasicMixin, UserMixin):
     )
 
     def __str__(self):
-        return "{0}".format(self.name or self.wx_user_id)
+        return "{0}".format(self.name)
 
-    @classmethod
-    def create(cls, wx_user_id):
-        user = cls.query.filter_by(wx_user_id=wx_user_id).first()
-        if user is None:
-            user = cls(wx_user_id=wx_user_id)
-            db.session.add(user)
-        return user
+    def verify(self, password):
+        return ldap.check_password(self.name, password)

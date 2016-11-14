@@ -1,0 +1,28 @@
+import os
+
+__curdir__ = os.path.realpath(os.path.dirname(__file__))
+
+SECRET_KEY = "super-secret"
+JWT_ALG = "HS256"
+WTF_CSRF_ENABLED = False
+
+SECURITY_PASSWORD_HASH = "bcrypt"
+SECURITY_PASSWORD_SALT = "YOUR-SALT"
+SECURITY_TRACKABLE = True
+SECURITY_CONFIRMABLE = False
+
+SECURITY_USER_IDENTITY_ATTRIBUTES = "username"
+SECURITY_SEND_REGISTER_EMAIL = False
+SECURITY_POST_LOGIN_VIEW = "/"
+
+# SQLALCHEMY_DATABASE_URI = "mysql+pymysql://<username>:<password>@<host>/<dbname>"
+SQLALCHEMY_DATABASE_URI = "sqlite:///" + __curdir__ + "/dev.db"
+SQLALCHEMY_ECHO = False
+SQLALCHEMY_TRACK_MODIFICATIONS = True
+
+LDAP_SERVER = "ldap.leyantech.com"
+LDAP_BASE_DN = "dc=leyantech,dc=com"
+LDAP_ADMIN_PWD = "LDAP-PASSWORD"
+LDAP_DEFUALT_GID = 5000
+LDAP_HOME_TEMPLATE = "/home/{username}"
+LDAP_MAIL_TEMPLATE = "{username}@leyantech.com"

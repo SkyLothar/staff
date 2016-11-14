@@ -1,26 +1,4 @@
-from flask import request, url_for, redirect
-from flask.ext.admin import Admin
-from flask.ext.admin.contrib.sqla import ModelView
-from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.security import Security, current_user
-
-from ldap3 import Server, Connection, utils, HASHED_SALTED_MD5
-
-
-admin = Admin(name="staff", template_mode="bootstrap3")
-db = SQLAlchemy()
-security = Security()
-
-
-class AuthModelView(ModelView):
-    column_exclude_list = ["created_at", "updated_at"]
-    form_excluded_columns = ["created_at", "updated_at"]
-
-    def is_accessible(self):
-        return current_user.has_role("admin")
-
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for("security.login", next=request.url))
+from ldap3 import Server, Connection, utils, ALL, HASHED_SALTED_MD5
 
 
 class LDAP(object):
@@ -29,9 +7,9 @@ class LDAP(object):
         self._base_dn = None
 
     def init_app(self, app):
-        self._server = Server(app.config["LDAP_SERVER"])
+        self._server = Server(app.config["LDAP_SERVER"], get_info=ALL)
         self._base_dn = app.config["LDAP_BASE_DN"]
-        self._admin_pwd = app.config["LDAP_ADMIN_PWD"]
+        self._admin_password = app.config["LDAP_ADMIN_PWD"]
         self._gid = app.config["LDAP_DEFUALT_GID"]
         self._home_template = app.config["LDAP_HOME_TEMPLATE"]
         self._mail_template = app.config["LDAP_MAIL_TEMPLATE"]
@@ -39,9 +17,11 @@ class LDAP(object):
     def get_connection(self):
         dn = "cn=admin,{0}".format(self._base_dn)
         conn = Connection(self._server, user=dn, password=self._admin_password)
-        conn.bind()
         conn.start_tls()
-        return conn
+        binded = conn.bind()
+        if binded:
+            return conn
+        return None
 
     def get_user_dn(self, username):
         dn = "cn={0},ou=users,{1}".format(username, self._base_dn)
@@ -59,28 +39,28 @@ class LDAP(object):
         connection = connection = self.get_connection()
         dn = self.get_user_dn(username)
         salted_password = utils.hashed.hashed(HASHED_SALTED_MD5, password)
-        uid = self.get_next_uid()
+        uid = self.get_next_uid(connection)
 
         return connection.add(
             dn, ["inetOrgPerson", "posixAccount", "top"],
             {
                 "cn": username,
                 "gidNumber": self._gid,
-                "homeDirectory": self._home_template.format(username),
+                "homeDirectory": self._home_template.format(username=username),
                 "sn": surname,
                 "givenName": given_name,
                 "uid": username,
                 "uidNumber": uid,
                 "l": "active",
                 "loginShell": "/bin/bash",
-                "mail": self._mail_template.format(username),
+                "mail": self._mail_template.format(username=username),
                 "userPassword": salted_password
             }
         )
 
     def get_next_uid(self, connection):
         connection.search(
-            "ou=users,dc={0}".format(self._base_dn),
+            "ou=users,{0}".format(self._base_dn),
             "(cn=*)",
             attributes="uidNumber"
         )
@@ -94,5 +74,5 @@ class LDAP(object):
         dn = self.get_user_dn(username)
         connection = connection or self.get_connection()
         connection.search(dn, "(cn={0})".format(username))
-        count = len(connection.response)
-        return count > 1
+        count = len(connection.response or [])
+        return count > 0

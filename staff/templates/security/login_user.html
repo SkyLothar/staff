@@ -1,0 +1,16 @@
+{% from "_render_form.html" import render_field %}
+{% extends "security/_base.html" %}
+
+{% block title %}乐言科技 | 登录{% endblock %}
+
+{% block container %}
+<div class="container">
+  <form action="{{ url_for_security('login') }}" method="POST" name="login_user_form" class="form-security">
+    <h2 class="form-signin-heading">请登陆</h2>
+    {{ login_user_form.hidden_tag() }}
+    {{ render_field(login_user_form.username, show_label=False) }}
+    {{ render_field(login_user_form.password, show_label=False) }}
+    {{ login_user_form.submit(class="btn btn-lg btn-primary btn-block") }}
+  </form>
+</div> <!-- /container -->
+{% endblock %}

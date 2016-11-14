@@ -1,0 +1,22 @@
+{% macro render_field(field, show_label=True, autocomplete=True) %}
+<div class="row form-group {%if field.errors %}has-error{% endif %}">
+  {% if show_label %}
+  {{ field.label(class="control-label col-sm-2 " + ("required" if field.flags.required else "")) }}
+  <div class="col-sm-10">
+  {% else %}
+  <div class="col-sm-12">
+  {% endif %}
+    {% with clazz=kwargs.pop("class", "") + "form-control" %}
+    {{ field(
+      class=clazz,
+      placeholder="" if show_label else field.label.text,
+      autocomplete="on" if autocomplete else "off",
+      **kwargs
+    )|safe }}
+    {% endwith %}
+    {% if field.errors %}
+    <span class="help-block">{{ field.errors|join("|") }}</span>
+    {% endif %}
+  </div>
+</div>
+{% endmacro %}

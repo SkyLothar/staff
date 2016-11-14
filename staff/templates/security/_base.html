@@ -1,0 +1,44 @@
+{% from "_render_form.html" import render_field %}
+{% extends "_base.html" %}
+
+{% block more_css %}
+<style>
+  body {
+    padding-top: 40px;
+    padding-bottom: 40px;
+    background-color: #eee;
+  }
+  .form-security {
+    max-width: 330px;
+    padding: 15px;
+    margin: 0 auto;
+  }
+  .form-security .form-signin-heading,
+  .form-security .checkbox {
+    margin-bottom: 10px;
+  }
+  .form-security .checkbox {
+    font-weight: normal;
+  }
+  .form-security .form-control {
+    position: relative;
+    height: auto;
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+            box-sizing: border-box;
+    padding: 10px;
+    font-size: 16px;
+  }
+  .form-security .form-control:focus {
+    z-index: 2;
+  }
+  #submit {
+    margin-top: 10px;
+  }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+                margin: 0;
+  }
+</style>
+{% endblock %}
